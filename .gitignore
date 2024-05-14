@@ -1,0 +1,6 @@
+Image_Downloader/.env
+Image_Downloader/suppliers/**/data
+Image_Downloader/suppliers/**/.cache
+Image_Downloader/suppliers/**/.images
+Image_Downloader/suppliers/**/log*
+Image_Downloader/suppliers/**/*zip
