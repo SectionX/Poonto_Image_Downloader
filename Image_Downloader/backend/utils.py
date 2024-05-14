@@ -1,23 +1,34 @@
+"""
+Utility functions
+"""
+
+
 import pathlib
-from PIL import Image
-from typing import Literal
 from enum import Enum
 from zipfile import ZipFile
 from datetime import datetime
 
+from PIL import Image
 
-class integrity(Enum):
+class Integrity(Enum):
+    """
+    Enumerator to be used with IntegrityChecker
+    """
     BOTH = 1
     DOWNLOAD = 2
     IMAGE = 3
 
 class IntegrityChecker():
-    
-    
-    def __init__(self, supplier_path: pathlib.Path, mode: Literal[integrity.BOTH, integrity.DOWNLOAD, integrity.IMAGE] = integrity.BOTH, log = False):
+    """
+    Checks downloaded images for integrity, failed requests and other issues.
+    """
 
-        self.APP_PATH = supplier_path
-        self.image_path = self.APP_PATH / 'images'
+    def __init__(self, supplier_path: pathlib.Path,
+                 mode: Integrity = Integrity.BOTH,
+                 log = False):
+
+        self.app_path = supplier_path
+        self.image_path = self.app_path / 'images'
         self.files = self.image_path.iterdir()
         self.failed_files = []
         self.integrity_check_passed = True
@@ -30,26 +41,33 @@ class IntegrityChecker():
                 self.download_check_passed = False
                 with file.open() as f:
                     self.failed_files.append({'name': file.name, 'reason': f.read()})
-                
+
 
             #check integrity
             try:
                 image = Image.open(file)
                 image.verify()
-            except:
+            except OSError as e:
                 self.integrity_check_passed = False
-                self.failed_files.append({'name': file.name, 'reason': 'Integrity Check Failed'})
+                self.failed_files.append(
+                    {'name': file.name, 'reason': f'Integrity Check Failed, {e}'}
+                )
 
 
         match mode:
-            case integrity.BOTH: self.result = self.integrity_check_passed and self.download_check_passed
-            case integrity.DOWNLOAD: self.result = self.download_check_passed
-            case integrity.IMAGE: self.result = self.integrity_check_passed
+            case Integrity.BOTH: self.result = self.integrity_check_passed and \
+                                               self.download_check_passed
+            case Integrity.DOWNLOAD: self.result = self.download_check_passed
+            case Integrity.IMAGE: self.result = self.integrity_check_passed
         if log:
             self.write_to_log()
 
     def write_to_log(self):
-        with (self.APP_PATH / 'integrity_log.txt').open('w') as f:
+        """
+        Logs the result to notify the client.
+        """
+
+        with (self.app_path / 'integrity_log.txt').open('w') as f:
             f.writelines(str(item)+'\n' for item in self.failed_files)
 
     def __bool__(self):
@@ -57,33 +75,97 @@ class IntegrityChecker():
 
     def __repr__(self):
         return f'IntegrityChecker({self.result})'
-    
+
 
 class Archiver:
+    '''
+    Handles archiving for downloaded images and logs.
+    '''
 
-    def __init__(self, supplier_path: pathlib.Path, name: str = ..., integrity: bool | IntegrityChecker = ...):
-        self.APP_PATH = supplier_path
-        self.image_path = self.APP_PATH / 'images'
+    def __init__(self,
+                 supplier_path: pathlib.Path,
+                 name: str = ..., # type: ignore
+                 integrity: bool | IntegrityChecker = ... # type: ignore
+                ):
+
+        self.app_path = supplier_path
+        self.image_path = self.app_path / 'images'
         self.time: str = datetime.now().strftime('%Y%m%d')
         self.files = self.image_path.iterdir()
         self.log_files = ['integrity_log.txt', 'logs.txt', 'links.txt']
         self.name = 'ImageArchive' if name is Ellipsis else name
         self.integrity = bool(integrity)
-        self.zip_name = str(self.APP_PATH / f'{self.name}-{self.time}.zip')
+        self.zip_name = str(self.app_path / f'{self.name}-{self.time}.zip')
+
 
     def run(self):
+        """
+        The API of the class
+        """
+
         if not self.integrity:
-            print('The integrity check failed. Check the integrity_log.txt for issues or override the integrity check')
+            print('The integrity check failed. \
+                  Check the integrity_log.txt for issues or override the integrity check')
             return
         self.make_archive()
 
+
     def make_archive(self):
-        zip = ZipFile(self.zip_name, 'w')
+        """
+        Turns the images to a .zip file for easier transmission.
+        """
 
-        for file in self.files: 
-            zip.write(str(file), file.name)
+        with ZipFile(self.zip_name, 'w') as zipfile:
 
-        for filename in self.log_files:
-            file = self.APP_PATH / filename
-            zip.write(str(file), file.name)
-        zip.close()
+            for file in self.files:
+                zipfile.write(str(file), file.name)
+
+            for filename in self.log_files:
+                file = self.app_path / filename
+                zipfile.write(str(file), file.name)
+
+
+def archive_data(supplier_path: pathlib.Path) -> None:
+    '''
+    Archives the old worksheets. Doesn't hold long records. Calling it twice deletes everything.
+    '''
+    data_path = supplier_path / 'data'
+    archive_path = supplier_path / 'data.old'
+
+    data_path.replace(archive_path)
+    data_path.mkdir()
+    return None
+
+
+def show_logs(supplier_path: pathlib.Path) -> str:
+    '''
+    Returns the contents of the logs.txt file to the client.
+    '''
+    log_path = supplier_path / 'logs.txt'
+    try:
+        with log_path.open() as f:
+            return f.read()
+    except IOError as e:
+        return f'{e}, Logs not found for supplier {supplier_path.name}'
+
+
+def show_image_links(supplier_path: pathlib.Path) -> str:
+    '''
+    Returns text with filename|image_url pairs to the client if links.txt exists.
+    Otherwise notifies the client.
+    '''
+    link_path = supplier_path / 'links.txt'
+    try:
+        with link_path.open() as f:
+            return f.read()
+    except IOError as e:
+        return f'Links file not found for supplier {supplier_path.name}, {e}'
+
+
+def check_process() -> str:
+    """
+    Arguments 'supplier_path: pathlib.Path'
+    Checks if the Downloader process and returns the appropriate message.
+    """
+    return 'Not Implemented Yet'
+    

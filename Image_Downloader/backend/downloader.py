@@ -1,48 +1,65 @@
+'''
+Downloads images the images as marked on a links.txt
+'''
+
 import pathlib
 import threading
-import requests
 import pprint
+from abc import abstractmethod
 from typing import TextIO
+
+import requests
 
 class ImageDownloader:
 
+    '''
+    Class to be used on supplier scripts. Downloads the images
+    and allows the caller to define a method that applies a
+    transformation to the image before saving.
+    '''
+
     def __init__(self, supplier_path: pathlib.Path) -> None:
-        self.APP_PATH = supplier_path
-        self.links_file = (self.APP_PATH / 'links.txt')
-        self.out_dir = self.APP_PATH / 'images'
+        self.app_path = supplier_path
+        self.links_file = self.app_path / 'links.txt'
+        self.out_dir = self.app_path / 'images'
         self.existing_images: set[str] = {file.name for file in self.out_dir.iterdir()}
-        self.links_IO: TextIO
+        self.links_io: TextIO
 
     def run(self) -> None:
-        self.links_IO = self.links_file.open()
+        '''
+        The class' high level API
+        '''
+        self.links_io = self.links_file.open()
         queue: list[tuple[str, str]] = []
         current_sku = ''
-        for line in self.links_IO:
+        for line in self.links_io:
             line = line.strip()
-            if not line: continue
+            if not line:
+                continue
 
             filename, url = line.split('|')
             sku, _ = filename.split('_')
 
             if sku != current_sku:
-                self.download(queue)
+                self._download(queue)
                 current_sku = sku
                 queue.clear()
 
             queue.append((filename, url))
 
 
-    def download(self, chunk: list[tuple[str, str]]) -> None:
-        if not chunk: return
-        threads = [threading.Thread(target=self.download_item, args=(item,)) for item in chunk]
+    def _download(self, chunk: list[tuple[str, str]]) -> None:
+        if not chunk:
+            return
+        threads = [threading.Thread(target=self._download_item, args=(item,)) for item in chunk]
         for thread in threads:
             thread.start()
         for thread in threads:
             thread.join()
 
-    def download_item(self, item: tuple[str, str]):
+    def _download_item(self, item: tuple[str, str]):
         filename, url = item
-        if filename in self.existing_images: 
+        if filename in self.existing_images:
             print(f'Image {filename} already exists')
             return
 
@@ -60,15 +77,15 @@ class ImageDownloader:
             resp.raise_for_status()
             log['success'] = True
         except requests.Timeout as e:
+            e.add_note('time out')
             log['timeout'] = True
         except requests.HTTPError as e:
-            pass
-        except Exception as e:
-            log['reason'] = repr(e)
+            e.add_note('http error')
         finally:
             if log['success']:
                 out_path = self.out_dir / filename
-                with out_path.open('wb') as f: f.write(self.transform_image(resp.content, filename))
+                with out_path.open('wb') as f:
+                    f.write(self.transform_image(resp.content, filename))
                 print(log)
             else:
                 failed_image = self.out_dir / f"{'Failed_log'}-{filename}.txt"
@@ -76,6 +93,9 @@ class ImageDownloader:
                     log_file.write(pprint.pformat(log))
                 print(f"Failed to download image {url}. Check {str(failed_image)} for info")
 
-
+    @abstractmethod
     def transform_image(self, image: bytes, filename: str) -> bytes:
+        '''
+        Interface method to be defined in the supplier __main__
+        '''
         return image

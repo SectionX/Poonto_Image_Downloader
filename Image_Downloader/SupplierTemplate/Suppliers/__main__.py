@@ -1,10 +1,12 @@
 #!/usr/bin/python
+
+'''
+A script meant to spawned as a process from the controller.py script.
+'''
+
 import sys
+import os
 from pathlib import Path
-    
-supplier_path = Path(__file__).parent
-app_path = supplier_path.parent.parent.parent
-sys.path.append(str(app_path))
 
 from ...backend.pagegetter import ProductPageGetter
 from ...backend.worksheet import WorksheetImporter
@@ -12,17 +14,20 @@ from ...backend.downloader import ImageDownloader
 from ...backend.utils import IntegrityChecker, Archiver
 from ...backend.poonto.imagecropper import resize_image
 
-# Useful libraries for this script
-# import requests
-# from bs4 import BeautifulSoup
-# from PIL import Image
+supplier_path = Path(__file__).parent
+app_path = supplier_path.parent.parent.parent
+sys.path.append(str(app_path))
 
 class SupplierPageGetter(ProductPageGetter):
 
-    APP_PATH = Path(__file__).parent
+    '''
+    Class that handles finding product webpages
+    and scraping the content. Define bellow how
+    this happens.
+    '''
 
     def search(self, sku: str, *args) -> str | None:
-        
+
         '''
         You are given the Product Code / sku
         args[0] holds the Product Title
@@ -44,11 +49,7 @@ class SupplierPageGetter(ProductPageGetter):
         return the url string if found
         return None if not found
         '''
-        url = ''
-        if url:
-            return url
-        else:
-            return None
+        raise NotImplementedError()
 
     def parse_html(self, html_page: str, *args) -> list[str]:
         '''
@@ -68,11 +69,15 @@ class SupplierPageGetter(ProductPageGetter):
         return a list of url strings if images exist
         return an empty list if images don't exist
         '''
-        links = []
-        return links
+        raise NotImplementedError()
 
 
 class SupplierImageDownloader(ImageDownloader):
+
+    '''
+    Class that handles downloading and transforming
+    the images.
+    '''
 
     def transform_image(self, image: bytes, filename: str) -> bytes:
         '''
@@ -106,15 +111,24 @@ class SupplierImageDownloader(ImageDownloader):
         Apply a transformation to the image and return
         the bytes.
         '''
-        return image
+        resize_image(image, (740, 740), filename.split(os.sep)[-1])
+        raise NotImplementedError()
 
 
 def main():
+
+    '''
+    The function to be called by controller.py.
+    Don't attempt to run as top level.
+    '''
+
     ws = WorksheetImporter(supplier_path=supplier_path).worksheet
-    SupplierPageGetter(ws, 'Title', 'ProductCode', 'ProductURL', supplier_path=supplier_path).run()     # Make sure to define the correct column names.
+    SupplierPageGetter(ws, supplier_path,
+                       'Title', 'ProductCode', 'ProductURL',
+                       failed_only=False).run()
     ImageDownloader(supplier_path=supplier_path).run()
     ic = IntegrityChecker(log=True, supplier_path=supplier_path)
-    Archiver(supplier_path, 'SupplierName', ic).run()                                                   # Change SupplierName to something more appropriate.
+    Archiver(supplier_path, 'SupplierName', ic).run()
 
 
 if __name__ == '__main__':
