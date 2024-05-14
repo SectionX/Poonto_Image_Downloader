@@ -1,7 +1,7 @@
 """
-Starts the test server
+Starts the test server with the reload parameter.
+It's hardcoded to listen on port 8080.
 """
-
 
 import uvicorn
 
