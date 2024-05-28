@@ -27,7 +27,7 @@ class SupplierImageDownloader(ImageDownloader):
     '''
 
     def transform_image(self, image: bytes, filename: str) -> bytes:
-        ext = filename.rsplit(os.sep, maxsplit=1)[-1]
+        ext = filename.rsplit('.', maxsplit=1)[-1]
         return resize_image(image, (740, 740), ext)
 
 class SupplierXMLreader(XmlReader):
@@ -86,7 +86,7 @@ def main():
     '''
 
     _ = SupplierXMLreader(supplier_path, 'Product', None)
-    ImageDownloader(supplier_path=supplier_path).run()
+    SupplierImageDownloader(supplier_path=supplier_path).run()
     ic = IntegrityChecker(log=True, supplier_path=supplier_path)
     Archiver(supplier_path, 'Artelibre', ic).run()
 

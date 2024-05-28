@@ -64,7 +64,7 @@ class SupplierImageDownloader(ImageDownloader):
     '''
 
     def transform_image(self, image: bytes, filename: str) -> bytes:
-        ext = filename.rsplit(os.sep, maxsplit=1)[-1]
+        ext = filename.rsplit('.', maxsplit=1)[-1]
         return resize_image(image, (740, 740), ext)
 
 
@@ -78,7 +78,7 @@ def main():
     SupplierPageGetter(ws, supplier_path,
                        'Title', 'ProductCode', 'ProductURL',
                        failed_only=False).run()
-    ImageDownloader(supplier_path=supplier_path).run()
+    SupplierImageDownloader(supplier_path=supplier_path).run()
     ic = IntegrityChecker(log=True, supplier_path=supplier_path)
     Archiver(supplier_path, 'Kentia', ic).run()
 

@@ -23,6 +23,6 @@ def resize_image(imagebytes: bytes, dimensions: tuple[int, int], extension: str)
         extension = 'jpeg'
 
     with io.BytesIO() as buffer:
-        background.save(buffer, extension)
+        background.save(buffer, format=extension)
         buffer.seek(0)
         return buffer.read()
