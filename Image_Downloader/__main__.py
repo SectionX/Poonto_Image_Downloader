@@ -18,7 +18,7 @@ def main():
     artelibre: xml (Searches for the 'product' list)
             
     Images are automatically transformed to 740x740
-    The resulting zip file is saved in Image_Downloader/suppliers/suppliername/ directory.
+    A zip will be created in the directory with the naming scheme [suppliername]-[date].zip
             ''')
         sys.exit(0)
 
