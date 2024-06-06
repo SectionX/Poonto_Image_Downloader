@@ -20,43 +20,12 @@ class XmlReader:
                  filename: TextIOWrapper | str | None):
 
         # Initialize supplier_path
-        if isinstance(supplier_path, str):
-            self.supplier_path = Path(supplier_path)
-        elif isinstance(supplier_path, Path):
-            self.supplier_path = supplier_path
-        else:
-            error = TypeError()
-            error.add_note('supplier_path must be Path or str')
-            raise error
+        self.supplier_path = supplier_path
+        self.filename = filename
 
-        # Initialize the product file
-        self.data_path: Path = self.supplier_path / 'data'
-        if filename:
-            if isinstance(filename, TextIOWrapper):
-                self.file_contents = filename.read()
-                filename.close()
-            elif isinstance(filename, str):
-                with open(filename, encoding='utf8') as f:
-                    self.file_contents = f.read()
-            else:
-                error = TypeError()
-                error.add_note('filename must be TextIOWrapper or str')
-                raise error            
-        else:
-            if len(sys.argv) >= 2:
-                with open(sys.argv[1], encoding='utf8') as f:
-                    self.file_contents = f.read()
-            else:
-                files = [*self.data_path.iterdir()]
-                if len(files) == 1:
-                    with open(files[0], 'rb') as f:
-                        self.file_contents = f.read()
-                else:
-                    error = ValueError()
-                    error.add_note('Filename can only be None if there exists an \
-                                   argument vector or there is a single file in data directory')
-                    raise error
-
+        if len(sys.argv) == 3:
+            with open(sys.argv[2], encoding='utf8') as f:
+                self.file_contents = f.read()
         self.product_node = product_node
         self.worksheet: pd.DataFrame | None = None
         self.create_worksheet(self.file_contents, self.product_node)

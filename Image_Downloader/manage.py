@@ -7,6 +7,7 @@ import subprocess as sp
 import pathlib
 import sys
 from typing import Any
+from threading import Thread
 
 import dotenv
 
@@ -19,6 +20,7 @@ from .backend.exports import export_images
 
 with open(dotenv.find_dotenv(), encoding='utf8') as configfile:
     env = dotenv.dotenv_values(stream=configfile)
+
 
 
 def find_path(supplier) -> pathlib.Path:
