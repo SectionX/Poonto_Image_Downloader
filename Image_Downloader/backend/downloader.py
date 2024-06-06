@@ -33,8 +33,7 @@ class ImageDownloader:
         '''
         self.links_io = self.links_file.open()
         queue: list[tuple[str, str]] = []
-        current_sku = ''
-        for line in self.links_io:
+        for i, line in enumerate(self.links_io, 1):
             line = line.strip()
             if not line:
                 continue
@@ -42,12 +41,13 @@ class ImageDownloader:
             filename, url = line.split('|')
             sku, _ = filename.split('_')
 
-            if sku != current_sku:
+            if i % 8 == 0:
                 self._download(queue)
-                current_sku = sku
                 queue.clear()
 
             queue.append((filename, url))
+        self._download(queue)
+        queue.clear()
 
 
     def _download(self, chunk: list[tuple[str, str]]) -> None:
