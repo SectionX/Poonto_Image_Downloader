@@ -76,6 +76,8 @@ class ProductPageGetter:
 
         self.app_path = supplier_path
         self.cache_path: pathlib.Path = self.app_path / '.cache'
+        if not self.cache_path.exists():
+            self.cache_path.mkdir()
         self.cached_files: list[str] = [
             str(x).rsplit(os.sep, maxsplit=1)[-1] for
             x in  self.cache_path.iterdir()

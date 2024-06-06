@@ -22,6 +22,8 @@ class ImageDownloader:
         self.app_path = supplier_path
         self.links_file = self.app_path / 'links.txt'
         self.out_dir = self.app_path / 'images'
+        if not self.out_dir.exists():
+            self.out_dir.mkdir()
         self.existing_images: set[str] = {file.name for file in self.out_dir.iterdir()}
         self.links_io: TextIO
 

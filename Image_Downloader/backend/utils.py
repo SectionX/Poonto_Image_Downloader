@@ -7,6 +7,7 @@ import pathlib
 from enum import Enum
 from zipfile import ZipFile
 from datetime import datetime
+import shutil
 
 from PIL import Image
 
@@ -95,7 +96,8 @@ class Archiver:
         self.log_files = ['integrity_log.txt', 'logs.txt', 'links.txt']
         self.name = 'ImageArchive' if name is Ellipsis else name
         self.integrity = bool(integrity)
-        self.zip_name = str(self.app_path / f'{self.name}-{self.time}.zip')
+        self.zip_name = str(self.app_path.absolute() / f'{self.name}-{self.time}.zip')
+        
 
 
     def run(self):
@@ -123,6 +125,9 @@ class Archiver:
             for filename in self.log_files:
                 file = self.app_path / filename
                 zipfile.write(str(file), file.name)
+        
+        cwd = pathlib.Path.cwd()
+        shutil.copy(self.zip_name, str(cwd.absolute()))
 
 
 def archive_data(supplier_path: pathlib.Path) -> None:

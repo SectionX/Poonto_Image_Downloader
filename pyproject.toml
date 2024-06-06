@@ -4,12 +4,12 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "poonto-downloader"
+name = "Image_Downloader"
 version = "1.0"
-dependencies = ['pandas', 'pillow', 'requests', 'bs4', 'xmltodict']
+dependencies = ["pandas", "pillow", "requests", "bs4", "xmltodict", "openpyxl"]
 requires-python = ">=3.8"
 authors = [
-{name = "YourName", email = "Youremail@mail.tld"},
+{name = "Eli Stouraitis", email = "h.stoyraitis@gmail.com"},
 ]
 maintainers = []
 description = "Add a description of your project"
@@ -19,7 +19,7 @@ classifiers = [
 ]
 
 [tool.setuptools]
-packages = ["Image_Downloader", "Image_Downloader.backend", "Image_Downloader.suppliers.*"]
+packages = ["Image_Downloader", "Image_Downloader.backend", "Image_Downloader.suppliers.artelibre", "Image_Downloader.suppliers.vamvax", "Image_Downloader.suppliers.kentia", "Image_Downloader.suppliers.estia"]
 
 [project.optional-dependencies]
 
