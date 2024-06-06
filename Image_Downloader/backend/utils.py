@@ -125,7 +125,8 @@ class Archiver:
             for filename in self.log_files:
                 file = self.app_path / filename
                 zipfile.write(str(file), file.name)
-        
+
+        self.image_path.rmdir()
         cwd = pathlib.Path.cwd()
         shutil.copy(self.zip_name, str(cwd.absolute()))
 
