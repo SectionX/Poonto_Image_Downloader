@@ -126,7 +126,9 @@ class Archiver:
                 file = self.app_path / filename
                 zipfile.write(str(file), file.name)
 
-        self.image_path.rmdir()
+        images = self.image_path.iterdir()
+        for image in images:
+            image.unlink()
         cwd = pathlib.Path.cwd()
         shutil.copy(self.zip_name, str(cwd.absolute()))
 
