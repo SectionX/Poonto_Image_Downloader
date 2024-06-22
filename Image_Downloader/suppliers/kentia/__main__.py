@@ -43,7 +43,7 @@ class SupplierPageGetter(ProductPageGetter):
             url = results['url']
             return url
 
-        except requests.HTTPError as e:
+        except (requests.HTTPError, TypeError) as e:
 
             e.add_note('Product page not found')
             return None

@@ -39,7 +39,6 @@ class ImageDownloader:
                 continue
 
             filename, url = line.split('|')
-            sku, _ = filename.split('_')
 
             if i % 8 == 0:
                 self._download(queue)

@@ -7,7 +7,7 @@ build-backend = "hatchling.build"
 name = "Image_Downloader"
 version = "1.0"
 dependencies = ["pandas", "pillow", "requests", "bs4", "xmltodict", "openpyxl"]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 authors = [
 {name = "Eli Stouraitis", email = "h.stoyraitis@gmail.com"},
 ]
