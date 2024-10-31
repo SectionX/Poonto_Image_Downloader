@@ -84,6 +84,10 @@ class ProductPageGetter:
         ]
         self.no_of_parallel_connections: int = 4
         self.not_found = []
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 \
+                            (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+        }
 
 
         self.df: pd.DataFrame = worksheet
@@ -189,7 +193,7 @@ class ProductPageGetter:
                 resp = self._retrieve_from_cache(title, sku)
             else:
                 print(f'Requesting page {product_url}')
-                resp = requests.get(product_url, timeout=10)
+                resp = requests.get(product_url, headers=self.headers, timeout=10)
                 resp.raise_for_status()
                 message = f'Request for page {sku} - {title} successful'
                 print(message)

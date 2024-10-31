@@ -22,6 +22,10 @@ class ImageDownloader:
         self.app_path = supplier_path
         self.links_file = self.app_path / 'links.txt'
         self.out_dir = self.app_path / 'images'
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 \
+                            (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+        }
         if not self.out_dir.exists():
             self.out_dir.mkdir()
         self.existing_images: set[str] = {file.name for file in self.out_dir.iterdir()}
@@ -72,7 +76,7 @@ class ImageDownloader:
         log['timeout'] = False
         log['reason'] = 'Ok'
         try:
-            resp = requests.get(url, timeout=10)
+            resp = requests.get(url, headers=self.headers, timeout=10)
             log['status_code'] = resp.status_code
             log['reason'] = resp.reason
             resp.raise_for_status()
